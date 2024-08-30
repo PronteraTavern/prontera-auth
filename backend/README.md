@@ -42,3 +42,10 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
+
+## Todo
+
+- /profile GET
+- Passport to ease auth
+- Database Integration
+- bcrypt for pass

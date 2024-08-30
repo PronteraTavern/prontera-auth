@@ -2,17 +2,21 @@ import {
   Injectable,
   UnauthorizedException,
   NotFoundException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { JwtPayload } from './entities/jwt-payload.entity';
 import { SignInResponseDto } from './dto/signin-response.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
+    @Inject(forwardRef(() => UsersService)) private usersService: UsersService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async signIn(username: string, pass: string): Promise<SignInResponseDto> {
@@ -32,5 +36,15 @@ export class AuthService {
       access_token: await this.jwtService.signAsync(payload),
       token_type: 'Bearer',
     };
+  }
+
+  async validateToken(token: string): Promise<JwtPayload> {
+    try {
+      return await this.jwtService.verifyAsync<JwtPayload>(token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
+    } catch {
+      throw new UnauthorizedException();
+    }
   }
 }
